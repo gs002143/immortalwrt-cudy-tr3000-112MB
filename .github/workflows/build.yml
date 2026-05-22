@@ -1,4 +1,4 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (含nikki)
+name: Build ImmortalWrt for Cudy TR3000 v1 (含nikki完整版)
 
 on:
   workflow_dispatch:
@@ -33,31 +33,23 @@ jobs:
       - name: Patch DTS for 112MB UBI partition
         working-directory: immortalwrt
         run: |
-          DTS_FILE=$(find target/linux/mediatek/dts -name "*cudy*tr3000*" \
-                     -o -name "*tr3000*cudy*" 2>/dev/null | head -1)
-          if [ -z "$DTS_FILE" ]; then
-            DTS_FILE=$(find target/linux/mediatek/dts -name "*.dts" \
-                       | xargs grep -l -i "tr3000" 2>/dev/null | head -1)
-          fi
+          DTS_FILE=$(find target/linux/mediatek/dts -name "*.dts" \
+                     | xargs grep -l -i "tr3000" 2>/dev/null | head -1)
           echo "==> DTS file: $DTS_FILE"
           if [ -n "$DTS_FILE" ]; then
-            # 兼容更多版本的DTS格式替换
-            sed -i 's/0x04000000/0x07000000/g' "$DTS_FILE"
-            sed -i 's/0x4000000/0x07000000/g' "$DTS_FILE"
+            sed -i 's/reg = <0x4000000 0x[0-9a-fA-F]*>/reg = <0x4000000 0x7000000>/g' "$DTS_FILE"
+            sed -i 's/<0x4000000 0x3c00000>/<0x4000000 0x7000000>/g' "$DTS_FILE"
             echo "==> After patch:"
             grep -n "0x7000000\|0x4000000\|ubi" "$DTS_FILE" | head -20
           else
             echo "WARNING: DTS not found!"
-            find target/linux/mediatek/dts -name "*.dts" | head -10
           fi
 
-      - name: Setup feeds (官方 + nikki)
+      - name: Setup feeds
         working-directory: immortalwrt
         run: |
           echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" \
             >> feeds.conf.default
-          cat feeds.conf.default
-
           ./scripts/feeds update -a
           ./scripts/feeds install -a
           ./scripts/feeds install -a -p nikki
@@ -72,144 +64,183 @@ jobs:
       - name: Write .config
         working-directory: immortalwrt
         run: |
-          cat << 'EOF' > .config
-          # Target Configuration
-          CONFIG_TARGET_mediatek=y
-          CONFIG_TARGET_mediatek_filogic=y
-          CONFIG_TARGET_mediatek_filogic_DEVICE_cudy_tr3000-v1=y
+          python3 - << 'PYEOF'
+lines = [
+  "CONFIG_TARGET_mediatek=y",
+  "CONFIG_TARGET_mediatek_filogic=y",
+  "CONFIG_TARGET_mediatek_filogic_DEVICE_cudy_tr3000-v1=y",
 
-          # Default Packages
-          CONFIG_PACKAGE_autocore=y
-          CONFIG_PACKAGE_base-files=y
-          CONFIG_PACKAGE_block-mount=y
-          CONFIG_PACKAGE_bridger=y
-          CONFIG_PACKAGE_ca-bundle=y
-          CONFIG_PACKAGE_default-settings-chn=y
-          CONFIG_PACKAGE_dnsmasq=n
-          CONFIG_PACKAGE_dnsmasq-full=y
-          CONFIG_PACKAGE_dropbear=y
-          CONFIG_PACKAGE_firewall4=y
-          CONFIG_PACKAGE_fitblk=y
-          CONFIG_PACKAGE_fstools=y
-          CONFIG_PACKAGE_kmod-crypto-hw-safexcel=y
-          CONFIG_PACKAGE_kmod-gpio-button-hotplug=y
-          CONFIG_PACKAGE_kmod-leds-gpio=y
-          CONFIG_PACKAGE_kmod-nf-nathelper=y
-          CONFIG_PACKAGE_kmod-nf-nathelper-extra=y
-          CONFIG_PACKAGE_kmod-nft-offload=y
-          CONFIG_PACKAGE_kmod-phy-aquantia=y
-          CONFIG_PACKAGE_libc=y
-          CONFIG_PACKAGE_libgcc=y
-          CONFIG_PACKAGE_libustream-openssl=y
-          CONFIG_PACKAGE_logd=y
-          CONFIG_PACKAGE_luci-app-package-manager=y
-          CONFIG_PACKAGE_luci-compat=y
-          CONFIG_PACKAGE_luci-lib-base=y
-          CONFIG_PACKAGE_luci-lib-ipkg=y
-          CONFIG_PACKAGE_luci-light=y
-          CONFIG_PACKAGE_mtd=y
-          CONFIG_PACKAGE_netifd=y
-          CONFIG_PACKAGE_nftables=y
-          CONFIG_PACKAGE_odhcp6c=y
-          CONFIG_PACKAGE_odhcpd-ipv6only=y
-          CONFIG_PACKAGE_opkg=y
-          CONFIG_PACKAGE_ppp=y
-          CONFIG_PACKAGE_ppp-mod-pppoe=y
-          CONFIG_PACKAGE_procd-ujail=y
-          CONFIG_PACKAGE_uboot-envtools=y
-          CONFIG_PACKAGE_uci=y
-          CONFIG_PACKAGE_uclient-fetch=y
-          CONFIG_PACKAGE_urandom-seed=y
-          CONFIG_PACKAGE_urngd=y
-          CONFIG_PACKAGE_wpad-openssl=y
-          CONFIG_PACKAGE_kmod-usb3=y
-          CONFIG_PACKAGE_kmod-mt7915e=y
-          CONFIG_PACKAGE_kmod-mt7981-firmware=y
-          CONFIG_PACKAGE_mt7981-wo-firmware=y
-          CONFIG_PACKAGE_automount=y
+  # 官方默认预装包
+  "CONFIG_PACKAGE_autocore=y",
+  "CONFIG_PACKAGE_base-files=y",
+  "CONFIG_PACKAGE_block-mount=y",
+  "CONFIG_PACKAGE_bridger=y",
+  "CONFIG_PACKAGE_ca-bundle=y",
+  "CONFIG_PACKAGE_default-settings-chn=y",
+  "CONFIG_PACKAGE_dnsmasq=n",
+  "CONFIG_PACKAGE_dnsmasq-full=y",
+  "CONFIG_PACKAGE_dropbear=y",
+  "CONFIG_PACKAGE_firewall4=y",
+  "CONFIG_PACKAGE_fitblk=y",
+  "CONFIG_PACKAGE_fstools=y",
+  "CONFIG_PACKAGE_kmod-crypto-hw-safexcel=y",
+  "CONFIG_PACKAGE_kmod-gpio-button-hotplug=y",
+  "CONFIG_PACKAGE_kmod-leds-gpio=y",
+  "CONFIG_PACKAGE_kmod-nf-nathelper=y",
+  "CONFIG_PACKAGE_kmod-nf-nathelper-extra=y",
+  "CONFIG_PACKAGE_kmod-nft-offload=y",
+  "CONFIG_PACKAGE_kmod-phy-aquantia=y",
+  "CONFIG_PACKAGE_libc=y",
+  "CONFIG_PACKAGE_libgcc=y",
+  "CONFIG_PACKAGE_libustream-openssl=y",
+  "CONFIG_PACKAGE_logd=y",
+  "CONFIG_PACKAGE_luci-app-package-manager=y",
+  "CONFIG_PACKAGE_luci-compat=y",
+  "CONFIG_PACKAGE_luci-lib-base=y",
+  "CONFIG_PACKAGE_luci-lib-ipkg=y",
+  "CONFIG_PACKAGE_luci-light=y",
+  "CONFIG_PACKAGE_mtd=y",
+  "CONFIG_PACKAGE_netifd=y",
+  "CONFIG_PACKAGE_nftables=y",
+  "CONFIG_PACKAGE_odhcp6c=y",
+  "CONFIG_PACKAGE_odhcpd-ipv6only=y",
+  "CONFIG_PACKAGE_opkg=y",
+  "CONFIG_PACKAGE_ppp=y",
+  "CONFIG_PACKAGE_ppp-mod-pppoe=y",
+  "CONFIG_PACKAGE_procd-ujail=y",
+  "CONFIG_PACKAGE_uboot-envtools=y",
+  "CONFIG_PACKAGE_uci=y",
+  "CONFIG_PACKAGE_uclient-fetch=y",
+  "CONFIG_PACKAGE_urandom-seed=y",
+  "CONFIG_PACKAGE_urngd=y",
+  "CONFIG_PACKAGE_wpad-openssl=y",
+  "CONFIG_PACKAGE_kmod-usb3=y",
+  "CONFIG_PACKAGE_kmod-mt7915e=y",
+  "CONFIG_PACKAGE_kmod-mt7981-firmware=y",
+  "CONFIG_PACKAGE_mt7981-wo-firmware=y",
+  "CONFIG_PACKAGE_automount=y",
 
-          # Theme
-          CONFIG_PACKAGE_luci-theme-argon=y
+  # Argon 主题
+  "CONFIG_PACKAGE_luci-theme-argon=y",
 
-          # UPnP
-          CONFIG_PACKAGE_luci-app-upnp=y
-          CONFIG_PACKAGE_miniupnpd-nftables=y
+  # UPnP IGD + PCP/NAT-PMP 及其完整 kmod 依赖
+  "CONFIG_PACKAGE_luci-app-upnp=y",
+  "CONFIG_PACKAGE_miniupnpd-nftables=y",
+  "CONFIG_PACKAGE_kmod-nft-nat=y",
+  "CONFIG_PACKAGE_kmod-nf-nat=y",
 
-          # ZTE F50 Drivers
-          CONFIG_PACKAGE_kmod-mii=y
-          CONFIG_PACKAGE_kmod-usb-net=y
-          CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y
-          CONFIG_PACKAGE_kmod-usb-net-rndis=y
+  # nftables 完整基础依赖（firewall4 需要）
+  "CONFIG_PACKAGE_kmod-nft-core=y",
+  "CONFIG_PACKAGE_kmod-nft-fib=y",
 
-          # Nikki Components
-          CONFIG_PACKAGE_nikki=y
-          CONFIG_PACKAGE_luci-app-nikki=y
-          CONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y
+  # F50 USB网络共享驱动
+  "CONFIG_PACKAGE_kmod-mii=y",
+  "CONFIG_PACKAGE_kmod-usb-net=y",
+  "CONFIG_PACKAGE_kmod-usb-net-cdc-ether=y",
+  "CONFIG_PACKAGE_kmod-usb-net-rndis=y",
 
-          # Kernel Dependencies for Nikki
-          CONFIG_PACKAGE_kmod-nf-socket=y
-          CONFIG_PACKAGE_kmod-nft-socket=y
-          CONFIG_PACKAGE_kmod-nft-tproxy=y
-          CONFIG_PACKAGE_kmod-tun=y
-          CONFIG_PACKAGE_kmod-inet-diag=y
-          CONFIG_PACKAGE_kmod-dummy=y
+  # USB 硬盘完整支持
+  "CONFIG_PACKAGE_kmod-usb-storage=y",
+  "CONFIG_PACKAGE_kmod-usb-storage-uas=y",
+  "CONFIG_PACKAGE_kmod-scsi-core=y",
+  "CONFIG_PACKAGE_kmod-fs-ext4=y",
+  "CONFIG_PACKAGE_kmod-fs-exfat=y",
+  "CONFIG_PACKAGE_kmod-fs-vfat=y",
+  "CONFIG_PACKAGE_kmod-nls-utf8=y",
+  "CONFIG_PACKAGE_kmod-nls-cp437=y",
+  "CONFIG_PACKAGE_kmod-nls-iso8859-1=y",
+  "CONFIG_PACKAGE_e2fsprogs=y",
+  "CONFIG_PACKAGE_hd-idle=y",
+  "CONFIG_PACKAGE_luci-app-hd-idle=y",
 
-          # User Dependencies for Nikki
-          CONFIG_PACKAGE_curl=y
-          CONFIG_PACKAGE_yq=y
-          CONFIG_PACKAGE_ip-full=y
+  # nikki 本体 + LuCI + 中文
+  "CONFIG_PACKAGE_nikki=y",
+  "CONFIG_PACKAGE_luci-app-nikki=y",
+  "CONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y",
 
-          # Extra Netfilter Components
-          CONFIG_PACKAGE_kmod-nf-tproxy=y
-          CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y
-          EOF
-          sed -i 's/^[ \t]*//' .config
+  # nikki 的 kmod 依赖（全部编译进固件，不依赖外部kmods源）
+  "CONFIG_PACKAGE_kmod-nf-socket=y",
+  "CONFIG_PACKAGE_kmod-nft-socket=y",
+  "CONFIG_PACKAGE_kmod-nft-tproxy=y",
+  "CONFIG_PACKAGE_kmod-nf-tproxy=y",
+  "CONFIG_PACKAGE_kmod-tun=y",
+  "CONFIG_PACKAGE_kmod-inet-diag=y",
+  "CONFIG_PACKAGE_kmod-dummy=y",
+  "CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y",
+
+  # nikki 用户态依赖
+  "CONFIG_PACKAGE_curl=y",
+  "CONFIG_PACKAGE_yq=y",
+  "CONFIG_PACKAGE_ip-full=y",
+]
+with open(".config", "w") as f:
+    f.write("\n".join(lines) + "\n")
+print("Written .config with", len(lines), "entries")
+PYEOF
           make defconfig
 
-      - name: Copy custom files (首次启动预配置)
+      - name: Write first-boot script
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          cat << 'EOF' > files/etc/uci-defaults/99-custom-init.sh
-          #!/bin/sh
+          cat > files/etc/uci-defaults/99-custom-init.sh << 'SCRIPT'
+#!/bin/sh
 
-          # 1. 无登录密码
-          passwd -d root
+# 1. 无登录密码
+passwd -d root
 
-          # 2. 局域网 IP
-          uci set network.lan.ipaddr='192.168.1.1'
-          uci set network.lan.netmask='255.255.255.0'
-          uci commit network
+# 2. 局域网 IP
+uci set network.lan.ipaddr='192.168.1.1'
+uci set network.lan.netmask='255.255.255.0'
+uci commit network
 
-          # 3. WiFi 2.4G & 5G 兼容命名逻辑
-          uci set wireless.radio0.disabled='0'
-          uci set wireless.default_radio0.ssid='Cudy'
-          uci set wireless.default_radio0.encryption='none'
+# 3. WiFi 2.4G
+uci set wireless.@wifi-device[0].disabled='0'
+uci set wireless.@wifi-iface[0].disabled='0'
+uci set wireless.@wifi-iface[0].ssid='Cudy'
+uci set wireless.@wifi-iface[0].encryption='none'
 
-          uci set wireless.radio1.disabled='0'
-          uci set wireless.default_radio1.ssid='Cudy-5G'
-          uci set wireless.default_radio1.encryption='none'
+# 4. WiFi 5G
+uci set wireless.@wifi-device[1].disabled='0'
+uci set wireless.@wifi-iface[1].disabled='0'
+uci set wireless.@wifi-iface[1].ssid='Cudy-5G'
+uci set wireless.@wifi-iface[1].encryption='none'
 
-          uci commit wireless
-          /sbin/wifi up
+uci commit wireless
+wifi up
 
-          # 4. Argon 默认主题
-          uci set luci.main.mediaurlbase='/luci-static/argon'
-          uci commit luci
+# 5. Argon 默认主题
+uci set luci.main.mediaurlbase='/luci-static/argon'
+uci commit luci
 
-          # 5. 写入 immortalwrt kmods 源
-          DISTRIB_RELEASE=$(cat /etc/openwrt_release | grep DISTRIB_RELEASE | cut -d= -f2 | tr -d '"')
-          DISTRIB_TARGET=$(cat /etc/openwrt_release | grep DISTRIB_TARGET | cut -d= -f2 | tr -d '"')
-          KERNEL_VER=$(uname -r)
-          KMODS_FEED="src/gz immortalwrt_kmods https://downloads.immortalwrt.org/releases/${DISTRIB_RELEASE}/targets/${DISTRIB_TARGET}/kmods/${KERNEL_VER}"
-          grep -qF "immortalwrt_kmods" /etc/opkg/customfeeds.conf 2>/dev/null || echo "$KMODS_FEED" >> /etc/opkg/customfeeds.conf
+# 6. 清除 distfeeds.conf 里所有错误源
+# 官方 distfeeds.conf 会自带 mirrors.vsean.net 的 nikki 源，该地址无效
+sed -i '/nikki/d' /etc/opkg/distfeeds.conf
+# 同时清除可能存在的旧 kmods 条目
+sed -i '/immortalwrt_kmods/d' /etc/opkg/distfeeds.conf
 
-          # 6. 写入 nikki 软件源
-          echo "src/gz nikki https://nikkinikki-org.github.io/OpenWrt-nikki/releases/packages-24.10/aarch64_cortex-a53" >> /etc/opkg/customfeeds.conf
+# 7. 写入正确的 nikki 源到 customfeeds.conf
+sed -i '/nikki/d' /etc/opkg/customfeeds.conf
+echo "src/gz nikki https://nikkinikki.pages.dev/openwrt-24.10/aarch64_cortex-a53/nikki" \
+  >> /etc/opkg/customfeeds.conf
 
-          exit 0
-          EOF
-          sed -i 's/^[ \t]*//' files/etc/uci-defaults/99-custom-init.sh
+# 8. kmods 源：
+# 所有 kmod 已编译进固件，不再依赖外部 kmods 源
+# 如需保留 kmods 源以备不时之需，取消下面注释并确认内核版本匹配
+# DISTRIB_RELEASE=$(sed -n 's/^DISTRIB_RELEASE=//p' /etc/openwrt_release | tr -d '"' | tr -d "'" | tr -d ' ')
+# DISTRIB_TARGET=$(sed -n 's/^DISTRIB_TARGET=//p' /etc/openwrt_release | tr -d '"' | tr -d "'" | tr -d ' ')
+# KERNEL_VER=$(uname -r | tr -d ' ')
+# echo "src/gz immortalwrt_kmods https://downloads.immortalwrt.org/releases/${DISTRIB_RELEASE}/targets/${DISTRIB_TARGET}/kmods/${KERNEL_VER}" \
+#   >> /etc/opkg/customfeeds.conf
+
+# 9. 记录日志供验证
+echo "=== /etc/opkg/distfeeds.conf ===" > /tmp/custom-init.log
+cat /etc/opkg/distfeeds.conf >> /tmp/custom-init.log
+echo "=== /etc/opkg/customfeeds.conf ===" >> /tmp/custom-init.log
+cat /etc/opkg/customfeeds.conf >> /tmp/custom-init.log
+
+exit 0
+SCRIPT
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -228,14 +259,12 @@ jobs:
         run: |
           echo "=== Firmware files ==="
           ls -lh bin/targets/mediatek/filogic/ | grep -i "cudy\|tr3000" || \
-          ls -lh bin/targets/mediatek/filogic/
-          echo ""
+            ls -lh bin/targets/mediatek/filogic/
           echo "=== nikki packages ==="
-          find bin/packages -name "*nikki*" -o -name "*mihomo*" 2>/dev/null | head -20
-          echo ""
-          echo "=== DTS patch verification ==="
+          find bin/packages -name "*nikki*" 2>/dev/null | head -10
+          echo "=== DTS patch ==="
           grep -n "0x7000000" target/linux/mediatek/dts/*tr3000* 2>/dev/null || \
-            echo "WARNING: DTS patch not found in output"
+            echo "WARNING: DTS patch not found"
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
