@@ -1,7 +1,10 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (含nikki完整版)
+name: Build ImmortalWrt for Cudy TR3000 v1 (含xray完整版)
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -40,10 +43,10 @@ jobs:
       - name: Setup feeds
         working-directory: immortalwrt
         run: |
-          echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git;main" >> feeds.conf.default
+          echo "src-git-full luci_app_xray https://github.com/yichya/luci-app-xray" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          ./scripts/feeds install -a -p nikki
+          ./scripts/feeds install -a -p luci_app_xray
 
       - name: Add argon theme
         working-directory: immortalwrt
@@ -128,9 +131,6 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_e2fsprogs=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_hd-idle=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-app-hd-idle=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_nikki=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_luci-app-nikki=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_luci-i18n-nikki-zh-cn=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nf-socket=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nft-socket=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nft-tproxy=y" >> .config
@@ -139,16 +139,19 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_kmod-inet-diag=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-dummy=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_curl=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_yq=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-app-xray=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_xray-core=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_v2ray-geoip=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_ip-full=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_curl=y" >> .config
           make defconfig
 
       - name: Write first-boot script
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCnNlZCAtaSAnL25pa2tpL2QnIC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZgpzZWQgLWkgJy9pbW1vcnRhbHdydF9rbW9kcy9kJyAvZXRjL29wa2cvZGlzdGZlZWRzLmNvbmYKc2VkIC1pICcvbmlra2kvZCcgL2V0Yy9vcGtnL2N1c3RvbWZlZWRzLmNvbmYKZWNobyAic3JjL2d6IG5pa2tpIGh0dHBzOi8vbmlra2luaWtraS5wYWdlcy5kZXYvb3BlbndydC0yNC4xMC9hYXJjaDY0X2NvcnRleC1hNTMvbmlra2kiID4+IC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mCmVjaG8gIj09PSBkaXN0ZmVlZHMuY29uZiA9PT0iID4gL3RtcC9jdXN0b20taW5pdC5sb2cKY2F0IC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwplY2hvICI9PT0gY3VzdG9tZmVlZHMuY29uZiA9PT0iID4+IC90bXAvY3VzdG9tLWluaXQubG9nCmNhdCAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwpleGl0IDAK" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmVjaG8gIj09PSBkaXN0ZmVlZHMuY29uZiA9PT0iID4gL3RtcC9jdXN0b20taW5pdC5sb2cKY2F0IC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwplY2hvICI9PT0gY3VzdG9tZmVlZHMuY29uZiA9PT0iID4+IC90bXAvY3VzdG9tLWluaXQubG9nCmNhdCAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwpleGl0IDAK" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -164,19 +167,38 @@ jobs:
       - name: Check build output
         working-directory: immortalwrt
         run: |
+          echo "=== Firmware files ==="
           ls -lh bin/targets/mediatek/filogic/ | grep -i "cudy\|tr3000" || ls -lh bin/targets/mediatek/filogic/
-          find bin/packages -name "*nikki*" 2>/dev/null | head -10
+          echo "=== xray packages ==="
+          find bin/packages -name "*xray*" 2>/dev/null | head -10
+          echo "=== DTS patch ==="
           grep -n "0x7000000" target/linux/mediatek/dts/*tr3000* 2>/dev/null || echo "WARNING: DTS patch not found"
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: immortalwrt-cudy-tr3000-v1-nikki-112MB
+          name: immortalwrt-cudy-tr3000-v1-xray-112MB
           path: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
           if-no-files-found: warn
           retention-days: 14
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v24.10.6-xray-${{ github.run_number }}
+          name: ImmortalWrt Cudy TR3000 v1 - xray Build ${{ github.run_number }}
+          body: |
+            自动编译固件
+            - 基于 ImmortalWrt 24.10.6
+            - 含 luci-app-xray / argon / UPnP / USB硬盘支持
+            - UBI 分区 112MB
+          files: |
+            immortalwrt/bin/targets/mediatek/filogic/*cudy*
+            immortalwrt/bin/targets/mediatek/filogic/*tr3000*
+          draft: false
+          prerelease: false
 
       - name: Upload build log on failure
         if: failure()
