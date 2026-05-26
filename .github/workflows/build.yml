@@ -33,9 +33,9 @@ jobs:
           DTS_FILE=$(find target/linux/mediatek/dts -name "*.dts" | xargs grep -l -i "tr3000" 2>/dev/null | head -1)
           echo "DTS file: $DTS_FILE"
           if [ -n "$DTS_FILE" ]; then
-            sed -i 's/reg = <0x4000000 0x[0-9a-fA-F]*>/reg = <0x4000000 0x7000000>/g' "$DTS_FILE"
-            sed -i 's/<0x4000000 0x3c00000>/<0x4000000 0x7000000>/g' "$DTS_FILE"
-            grep -n "0x7000000" "$DTS_FILE" | head -10
+            sed -i 's/0x4000000/0x7000000/g' "$DTS_FILE"
+            echo "==> After patch:"
+            grep -n "0x7000000\|ubi" "$DTS_FILE" | head -20
           else
             echo "WARNING: DTS not found"
           fi
@@ -145,6 +145,7 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_ip-full=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_curl=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_openssh-sftp-server=y" >> .config
           make defconfig
 
       - name: Write first-boot script
