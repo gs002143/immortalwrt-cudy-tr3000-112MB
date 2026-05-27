@@ -1,9 +1,10 @@
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 name: Build ImmortalWrt for Cudy TR3000 v1 (含xray完整版)
 
 on:
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 permissions:
   contents: write
@@ -36,8 +37,7 @@ jobs:
           echo "DTS file: $DTS_FILE"
           if [ -n "$DTS_FILE" ]; then
             sed -i 's/0x4000000/0x7000000/g' "$DTS_FILE"
-            echo "==> After patch:"
-            grep -n "0x7000000\|ubi" "$DTS_FILE" | head -20
+            grep -n "0x7000000" "$DTS_FILE" | head -10
           else
             echo "WARNING: DTS not found"
           fi
@@ -154,7 +154,7 @@ jobs:
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmVjaG8gIj09PSBkaXN0ZmVlZHMuY29uZiA9PT0iID4gL3RtcC9jdXN0b20taW5pdC5sb2cKY2F0IC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwplY2hvICI9PT0gY3VzdG9tZmVlZHMuY29uZiA9PT0iID4+IC90bXAvY3VzdG9tLWluaXQubG9nCmNhdCAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwpleGl0IDAK" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmVjaG8gJz09PSBkaXN0ZmVlZHMuY29uZiA9PT0nID4gL3RtcC9jdXN0b20taW5pdC5sb2cKY2F0IC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwplY2hvICc9PT0gY3VzdG9tZmVlZHMuY29uZiA9PT0nID4+IC90bXAvY3VzdG9tLWluaXQubG9nCmNhdCAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwpleGl0IDAK" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -174,13 +174,9 @@ jobs:
           ls -lh bin/targets/mediatek/filogic/ | grep -i "cudy\|tr3000" || ls -lh bin/targets/mediatek/filogic/
           echo "=== xray packages ==="
           find bin/packages -name "*xray*" 2>/dev/null | head -10
-          echo "=== DTS patch ==="
-          grep -n "0x7000000" target/linux/mediatek/dts/*tr3000* 2>/dev/null || echo "WARNING: DTS patch not found"
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
-        env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           name: immortalwrt-cudy-tr3000-v1-xray-112MB
           path: |
@@ -208,8 +204,6 @@ jobs:
       - name: Upload build log on failure
         if: failure()
         uses: actions/upload-artifact@v4
-        env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         with:
           name: build-log-error
           path: immortalwrt/build.log
