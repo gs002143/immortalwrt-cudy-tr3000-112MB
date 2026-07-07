@@ -1,4 +1,4 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (含xray完整版)
+name: Build ImmortalWrt for Cudy TR3000 v1 (含xray)
 
 on:
   workflow_dispatch:
@@ -131,8 +131,6 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_kmod-nls-cp437=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nls-iso8859-1=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_e2fsprogs=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_hd-idle=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_luci-app-hd-idle=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nf-socket=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nft-socket=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nft-tproxy=y" >> .config
@@ -154,7 +152,7 @@ jobs:
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmVjaG8gJz09PSBkaXN0ZmVlZHMuY29uZiA9PT0nID4gL3RtcC9jdXN0b20taW5pdC5sb2cKY2F0IC9ldGMvb3BrZy9kaXN0ZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwplY2hvICc9PT0gY3VzdG9tZmVlZHMuY29uZiA9PT0nID4+IC90bXAvY3VzdG9tLWluaXQubG9nCmNhdCAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiA+PiAvdG1wL2N1c3RvbS1pbml0LmxvZwpleGl0IDAK" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -193,7 +191,7 @@ jobs:
           body: |
             自动编译固件
             - 基于 ImmortalWrt 24.10.6
-            - 含 luci-app-xray / argon / UPnP / USB硬盘支持
+            - 含 luci-app-xray / argon / UPnP / USB硬盘 / SFTP
             - UBI 分区 112MB
           files: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
