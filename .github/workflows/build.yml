@@ -1,4 +1,4 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (含xray)
+name: Build ImmortalWrt for Cudy TR3000 v1 (含 ShadowSocksR Plus+ xray)
 
 on:
   workflow_dispatch:
@@ -26,9 +26,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget curl qemu-utils libelf-dev
 
-      - name: Clone ImmortalWrt 24.10.6
+      - name: Clone ImmortalWrt 25.12.1
         run: |
-          git clone --depth=1 --branch v24.10.6 https://github.com/immortalwrt/immortalwrt.git
+          git clone --depth=1 --branch v25.12.1 https://github.com/immortalwrt/immortalwrt.git
 
       - name: Patch DTS for 112MB UBI partition
         working-directory: immortalwrt
@@ -45,10 +45,9 @@ jobs:
       - name: Setup feeds
         working-directory: immortalwrt
         run: |
-          echo "src-git-full luci_app_xray https://github.com/yichya/luci-app-xray" >> feeds.conf.default
+          echo "src-git helloworld https://github.com/fw876/helloworld.git" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
-          ./scripts/feeds install -a -p luci_app_xray
 
       - name: Add argon theme
         working-directory: immortalwrt
@@ -139,7 +138,7 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_kmod-inet-diag=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-dummy=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y" >> .config
-          printf "%s\n" "CONFIG_PACKAGE_luci-app-xray=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-app-ssr-plus=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_xray-core=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geoip=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
@@ -152,7 +151,7 @@ jobs:
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -170,13 +169,13 @@ jobs:
         run: |
           echo "=== Firmware files ==="
           ls -lh bin/targets/mediatek/filogic/ | grep -i "cudy\|tr3000" || ls -lh bin/targets/mediatek/filogic/
-          echo "=== xray packages ==="
-          find bin/packages -name "*xray*" 2>/dev/null | head -10
+          echo "=== SSR Plus+ / xray packages ==="
+          find bin/packages -name "*ssr-plus*" -o -name "*xray*" 2>/dev/null | head -10
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: immortalwrt-cudy-tr3000-v1-xray-112MB
+          name: immortalwrt-cudy-tr3000-v1-ssrplus-xray-112MB
           path: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
@@ -186,13 +185,17 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v24.10.6-xray-${{ github.run_number }}
-          name: ImmortalWrt Cudy TR3000 v1 - xray Build ${{ github.run_number }}
+          tag_name: v25.12.1-ssrplus-xray-${{ github.run_number }}
+          name: ImmortalWrt Cudy TR3000 v1 - SSR Plus+ (xray only) 112MB Build ${{ github.run_number }}
           body: |
-            自动编译固件
-            - 基于 ImmortalWrt 24.10.6
-            - 含 luci-app-xray / argon / UPnP / USB硬盘 / SFTP
-            - UBI 分区 112MB
+            自动编译固件（已按要求修改）
+            - 基于 ImmortalWrt 25.12.1 稳定版
+            - ShadowSocksR Plus+ (luci-app-ssr-plus) + 仅预装 xray-core 内核（已删除其他内核以节省空间）
+            - 保留功能：Argon 主题默认、UPnP (miniupnpd-nftables)、112MB UBI 分区 (DTS patch 0x4000000→0x7000000)、First-boot 预设 (无密码、192.168.1.1、WiFi Cudy/Cudy-5G 无加密)、官方预装包、Zhongxing F50 USB 驱动 (kmod-mii 等)
+            - 已移除：nikki / mihomo / luci-app-xray 及相关多余网口设置
+            - 保留：dnsmasq-full、openssh-sftp-server、v2ray-geoip/geosite、tproxy/nftables 等代理常用模块
+            - helloworld feed 已加入，便于后续 opkg 更新相关软件（实际更新建议重新编译或手动处理）
+            - 关于 DNS 重定向：建议安装后在 ShadowSocksR Plus+ 插件内配置并启用其 DNS 处理，关闭或避免 ImmortalWrt 全局 DNS 重定向以防冲突和 dnsmasq 问题
           files: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
