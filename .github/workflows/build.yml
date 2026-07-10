@@ -1,4 +1,4 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (含 ShadowSocksR Plus+ xray)
+name: Build ImmortalWrt for Cudy TR3000 v1 (opkg + chinadns-ng + 自动软件源)
 
 on:
   workflow_dispatch:
@@ -85,6 +85,7 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_libustream-openssl=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_logd=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-app-package-manager=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-app-opkg=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-compat=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-lib-base=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-lib-ipkg=y" >> .config
@@ -140,6 +141,7 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_kmod-nf-conntrack-netlink=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_luci-app-ssr-plus=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_xray-core=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_chinadns-ng=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geoip=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_ip-full=y" >> .config
@@ -151,7 +153,7 @@ jobs:
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCgojID09PSDoh6rliqjmt7vliqAgSW1tb3J0YWxXcnQg5a6Y5pa56L2v5Lu25rqQ77yIb3BrZ++8iSA9PT0KaWYgWyAhIC1mIC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIF0gfHwgISBncmVwIC1xICJpbW1vcnRhbHdydF9jb3JlIiAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiAyPi9kZXYvbnVsbDsgdGhlbgogICAgY2F0ID4+IC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIDw8ICdFT0YnCgojIEltbW9ydGFsV3J0IDI1LjEyLjEg5a6Y5pa56L2v5Lu25rqQIC0g55Sx5Zu65Lu26Ieq5Yqo5re75YqgCnNyYy9neiBpbW1vcnRhbHdydF9jb3JlIGh0dHBzOi8vZG93bmxvYWRzLmltbW9ydGFsd3J0Lm9yZy9yZWxlYXNlcy8yNS4xMi4xL3RhcmdldHMvbWVkaWF0ZWsvZmlsb2dpYy9wYWNrYWdlcwpzcmMvZ3ogaW1tb3J0YWx3cnRfYmFzZSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjUuMTIuMS9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvYmFzZQpzcmMvZ3ogaW1tb3J0YWx3cnRfbHVjaSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjUuMTIuMS9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvbHVjaQpzcmMvZ3ogaW1tb3J0YWx3cnRfcGFja2FnZXMgaHR0cHM6Ly9kb3dubG9hZHMuaW1tb3J0YWx3cnQub3JnL3JlbGVhc2VzLzI1LjEyLjEvcGFja2FnZXMvYWFyY2g2NF9jb3J0ZXgtYTUzL3BhY2thZ2VzCkVPRgogICAgZWNobyAiSW1tb3J0YWxXcnQgZmVlZHMgYWRkZWQgdG8gb3BrZyIKZmkKCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -169,13 +171,13 @@ jobs:
         run: |
           echo "=== Firmware files ==="
           ls -lh bin/targets/mediatek/filogic/ | grep -i "cudy\|tr3000" || ls -lh bin/targets/mediatek/filogic/
-          echo "=== SSR Plus+ / xray packages ==="
-          find bin/packages -name "*ssr-plus*" -o -name "*xray*" 2>/dev/null | head -10
+          echo "=== Key packages ==="
+          find bin/packages -name "*chinadns-ng*" -o -name "*ssr-plus*" -o -name "*xray*" 2>/dev/null | head -10
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: immortalwrt-cudy-tr3000-v1-ssrplus-xray-112MB
+          name: immortalwrt-cudy-tr3000-v1-opkg-chinadns-ng-112MB
           path: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
@@ -185,17 +187,28 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v25.12.1-ssrplus-xray-${{ github.run_number }}
-          name: ImmortalWrt Cudy TR3000 v1 - SSR Plus+ (xray only) 112MB Build ${{ github.run_number }}
+          tag_name: v25.12.1-opkg-chinadns-${{ github.run_number }}
+          name: ImmortalWrt Cudy TR3000 v1 - opkg + chinadns-ng + 自动软件源 112MB Build ${{ github.run_number }}
           body: |
-            自动编译固件（已按要求修改）
-            - 基于 ImmortalWrt 25.12.1 稳定版
-            - ShadowSocksR Plus+ (luci-app-ssr-plus) + 仅预装 xray-core 内核（已删除其他内核以节省空间）
-            - 保留功能：Argon 主题默认、UPnP (miniupnpd-nftables)、112MB UBI 分区 (DTS patch 0x4000000→0x7000000)、First-boot 预设 (无密码、192.168.1.1、WiFi Cudy/Cudy-5G 无加密)、官方预装包、Zhongxing F50 USB 驱动 (kmod-mii 等)
-            - 已移除：nikki / mihomo / luci-app-xray 及相关多余网口设置
-            - 保留：dnsmasq-full、openssh-sftp-server、v2ray-geoip/geosite、tproxy/nftables 等代理常用模块
-            - helloworld feed 已加入，便于后续 opkg 更新相关软件（实际更新建议重新编译或手动处理）
-            - 关于 DNS 重定向：建议安装后在 ShadowSocksR Plus+ 插件内配置并启用其 DNS 处理，关闭或避免 ImmortalWrt 全局 DNS 重定向以防冲突和 dnsmasq 问题
+            自动编译固件（彻底解决版 - opkg 路线）
+
+            ✅ 已预装：
+            - ShadowSocksR Plus+（仅 xray-core 内核）
+            - chinadns-ng（推荐替换 dns2tcp，解决 AAAA 过滤警告）
+            - luci-app-opkg（经典稳定软件包界面）
+            - luci-app-package-manager（新版界面，可选使用）
+
+            ✅ 第一次启动自动添加 ImmortalWrt 25.12.1 官方软件源
+               → 以后直接 `opkg update` 即可使用，无需手动添加 feeds
+
+            ✅ 保留全部重要功能：
+            - 112MB UBI 分区（DTS patch）
+            - Argon 主题默认
+            - UPnP + USB 支持 + SFTP
+            - dnsmasq-full + tproxy/nftables 完整模块
+
+            关于 opkg vs apk：
+            本版本选择 opkg（更稳定、第三方插件兼容更好），已包含 luci-app-opkg。
           files: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
