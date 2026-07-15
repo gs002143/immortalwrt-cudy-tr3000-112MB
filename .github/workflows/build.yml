@@ -1,4 +1,4 @@
-name: Build ImmortalWrt for Cudy TR3000 v1 (opkg + chinadns-ng + 自动软件源)
+name: Build ImmortalWrt for Cudy TR3000 v1 (24.10.6 opkg + passwall2 + nikki + chinadns-ng + 4G驱动 + 490MB UBI)
 
 on:
   workflow_dispatch:
@@ -26,18 +26,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget curl qemu-utils libelf-dev
 
-      - name: Clone ImmortalWrt 25.12.1
+      - name: Clone ImmortalWrt 24.10.6 stable
         run: |
-          git clone --depth=1 --branch v25.12.1 https://github.com/immortalwrt/immortalwrt.git
+          git clone --depth=1 --branch v24.10.6 https://github.com/immortalwrt/immortalwrt.git
 
-      - name: Patch DTS for 112MB UBI partition
+      - name: Patch DTS for 490MB UBI partition (512MB flash mod)
         working-directory: immortalwrt
         run: |
-          DTS_FILE=$(find target/linux/mediatek/dts -name "*.dts" | xargs grep -l -i "tr3000" 2>/dev/null | head -1)
+          DTS_FILE=$(find target/linux/mediatek/dts -name "mt7981b-cudy-tr3000-v1.dts" | head -1)
           echo "DTS file: $DTS_FILE"
           if [ -n "$DTS_FILE" ]; then
-            sed -i 's/0x4000000/0x7000000/g' "$DTS_FILE"
-            grep -n "0x7000000" "$DTS_FILE" | head -10
+            sed -i 's/0x4000000/0x1EA00000/g' "$DTS_FILE"
+            grep -n "0x1EA00000" "$DTS_FILE" | head -10
           else
             echo "WARNING: DTS not found"
           fi
@@ -46,6 +46,8 @@ jobs:
         working-directory: immortalwrt
         run: |
           echo "src-git helloworld https://github.com/fw876/helloworld.git" >> feeds.conf.default
+          echo "src-git passwall2 https://github.com/Openwrt-Passwall/openwrt-passwall2.git" >> feeds.conf.default
+          echo "src-git nikki https://github.com/nikkinikki-org/OpenWrt-nikki.git" >> feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
@@ -142,18 +144,31 @@ jobs:
           printf "%s\n" "CONFIG_PACKAGE_luci-app-ssr-plus=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_xray-core=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_chinadns-ng=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-app-passwall2=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-app-nikki=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_nikki=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geoip=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_v2ray-geosite=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_ip-full=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_curl=y" >> .config
           printf "%s\n" "CONFIG_PACKAGE_openssh-sftp-server=y" >> .config
+          # 4G/5G USB Modem drivers
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-serial=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-serial-option=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-serial-wwan=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-net-qmi-wwan=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-net-cdc-mbim=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-net-cdc-ncm=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_kmod-usb-wdm=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-proto-qmi=y" >> .config
+          printf "%s\n" "CONFIG_PACKAGE_luci-proto-mbim=y" >> .config
           make defconfig
 
       - name: Write first-boot script
         working-directory: immortalwrt
         run: |
           mkdir -p files/etc/uci-defaults
-          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCgojID09PSDoh6rliqjmt7vliqAgSW1tb3J0YWxXcnQg5a6Y5pa56L2v5Lu25rqQ77yIb3BrZ++8iSA9PT0KaWYgWyAhIC1mIC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIF0gfHwgISBncmVwIC1xICJpbW1vcnRhbHdydF9jb3JlIiAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiAyPi9kZXYvbnVsbDsgdGhlbgogICAgY2F0ID4+IC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIDw8ICdFT0YnCgojIEltbW9ydGFsV3J0IDI1LjEyLjEg5a6Y5pa56L2v5Lu25rqQIC0g55Sx5Zu65Lu26Ieq5Yqo5re75YqgCnNyYy9neiBpbW1vcnRhbHdydF9jb3JlIGh0dHBzOi8vZG93bmxvYWRzLmltbW9ydGFsd3J0Lm9yZy9yZWxlYXNlcy8yNS4xMi4xL3RhcmdldHMvbWVkaWF0ZWsvZmlsb2dpYy9wYWNrYWdlcwpzcmMvZ3ogaW1tb3J0YWx3cnRfYmFzZSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjUuMTIuMS9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvYmFzZQpzcmMvZ3ogaW1tb3J0YWx3cnRfbHVjaSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjUuMTIuMS9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvbHVjaQpzcmMvZ3ogaW1tb3J0YWx3cnRfcGFja2FnZXMgaHR0cHM6Ly9kb3dubG9hZHMuaW1tb3J0YWx3cnQub3JnL3JlbGVhc2VzLzI1LjEyLjEvcGFja2FnZXMvYWFyY2g2NF9jb3J0ZXgtYTUzL3BhY2thZ2VzCkVPRgogICAgZWNobyAiSW1tb3J0YWxXcnQgZmVlZHMgYWRkZWQgdG8gb3BrZyIKZmkKCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
+          echo "IyEvYmluL3NoCnBhc3N3ZCAtZCByb290CnVjaSBzZXQgbmV0d29yay5sYW4uaXBhZGRyPScxOTIuMTY4LjEuMScKdWNpIHNldCBuZXR3b3JrLmxhbi5uZXRtYXNrPScyNTUuMjU1LjI1NS4wJwp1Y2kgY29tbWl0IG5ldHdvcmsKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1kZXZpY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uZGlzYWJsZWQ9JzAnCnVjaSBzZXQgd2lyZWxlc3MuQHdpZmktaWZhY2VbMF0uc3NpZD0nQ3VkeScKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVswXS5lbmNyeXB0aW9uPSdub25lJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWRldmljZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5kaXNhYmxlZD0nMCcKdWNpIHNldCB3aXJlbGVzcy5Ad2lmaS1pZmFjZVsxXS5zc2lkPSdDdWR5LTVHJwp1Y2kgc2V0IHdpcmVsZXNzLkB3aWZpLWlmYWNlWzFdLmVuY3J5cHRpb249J25vbmUnCnVjaSBjb21taXQgd2lyZWxlc3MKd2lmaSB1cAp1Y2kgc2V0IGx1Y2kubWFpbi5tZWRpYXVybGJhc2U9Jy9sdWNpLXN0YXRpYy9hcmdvbicKdWNpIGNvbW1pdCBsdWNpCgojID09PSDoh6rliqjmt7vliqAgSW1tb3J0YWxXcnQg5a6Y5pa56L2v5Lu25rqQ77yIb3BrZ++8iSA9PT0KaWYgWyAhIC1mIC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIF0gfHwgISBncmVwIC1xICJpbW1vcnRhbHdydF9jb3JlIiAvZXRjL29wa2cvY3VzdG9tZmVlZHMuY29uZiAyPi9kZXYvbnVsbDsgdGhlbgogICAgY2F0ID4+IC9ldGMvb3BrZy9jdXN0b21mZWVkcy5jb25mIDw8ICdFT0YnCgojIEltbW9ydGFsV3J0IDI0LjEwLjYg5a6Y5pa56L2v5Lu25rqQIC0g55Sx5Zu65Lu26Ieq5Yqo5re75YqgCnNyYy9neiBpbW1vcnRhbHdydF9jb3JlIGh0dHBzOi8vZG93bmxvYWRzLmltbW9ydGFsd3J0Lm9yZy9yZWxlYXNlcy8yNC4xMC42L3RhcmdldHMvbWVkaWF0ZWsvZmlsb2dpYy9wYWNrYWdlcwpzcmMvZ3ogaW1tb3J0YWx3cnRfYmFzZSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjQuMTAuNi9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvYmFzZQpzcmMvZ3ogaW1tb3J0YWx3cnRfbHVjaSBodHRwczovL2Rvd25sb2Fkcy5pbW1vcnRhbHdydC5vcmcvcmVsZWFzZXMvMjQuMTAuNi9wYWNrYWdlcy9hYXJjaDY0X2NvcnRleC1hNTMvbHVjaQpzcmMvZ3ogaW1tb3J0YWx3cnRfcGFja2FnZXMgaHR0cHM6Ly9kb3dubG9hZHMuaW1tb3J0YWx3cnQub3JnL3JlbGVhc2VzLzI0LjEwLjYvcGFja2FnZXMvYWFyY2g2NF9jb3J0ZXgtYTUzL3BhY2thZ2VzCkVPRgogICAgZWNobyAiSW1tb3J0YWxXcnQgZmVlZHMgYWRkZWQgdG8gb3BrZyIKZmkKCmV4aXQgMAo=" | base64 -d > files/etc/uci-defaults/99-custom-init.sh
           chmod +x files/etc/uci-defaults/99-custom-init.sh
 
       - name: Download source packages
@@ -177,7 +192,7 @@ jobs:
       - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
-          name: immortalwrt-cudy-tr3000-v1-opkg-chinadns-ng-112MB
+          name: immortalwrt-cudy-tr3000-v1-opkg-passwall2-nikki-chinadns-ng-490MB
           path: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
@@ -187,28 +202,32 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v25.12.1-opkg-chinadns-${{ github.run_number }}
-          name: ImmortalWrt Cudy TR3000 v1 - opkg + chinadns-ng + 自动软件源 112MB Build ${{ github.run_number }}
+          tag_name: v24.10.6-opkg-passwall2-nikki-490MB-${{ github.run_number }}
+          name: ImmortalWrt Cudy TR3000 v1 - 24.10.6 opkg + passwall2 + nikki + chinadns-ng + 4G驱动 + 490MB UBI Build ${{ github.run_number }}
           body: |
-            自动编译固件（彻底解决版 - opkg 路线）
+            自动编译固件（24.10.6 稳定版 - opkg 路线 + 透明代理 + 4G驱动）
 
             ✅ 已预装：
-            - ShadowSocksR Plus+（仅 xray-core 内核）
-            - chinadns-ng（推荐替换 dns2tcp，解决 AAAA 过滤警告）
+            - ShadowSocksR Plus+（xray-core 内核）
+            - PassWall2（透明代理，支持多种协议）
+            - Nikki（轻量透明代理，支持 mihomo/sing-box）
+            - chinadns-ng（推荐 DNS 工具，解决 AAAA 过滤）
             - luci-app-opkg（经典稳定软件包界面）
             - luci-app-package-manager（新版界面，可选使用）
+            - 常见 4G/5G USB 模块驱动（qmi/mbim/serial-option 等）
 
-            ✅ 第一次启动自动添加 ImmortalWrt 25.12.1 官方软件源
+            ✅ 第一次启动自动添加 ImmortalWrt 24.10.6 官方软件源
                → 以后直接 `opkg update` 即可使用，无需手动添加 feeds
 
-            ✅ 保留全部重要功能：
-            - 112MB UBI 分区（DTS patch）
+            ✅ 针对 512MB 闪存硬改机型：
+            - UBI 分区扩大到 490MB（DTS patch）
             - Argon 主题默认
-            - UPnP + USB 支持 + SFTP
+            - UPnP + USB 支持 + SFTP + 完整 USB 存储/网卡驱动
             - dnsmasq-full + tproxy/nftables 完整模块
 
             关于 opkg vs apk：
             本版本选择 opkg（更稳定、第三方插件兼容更好），已包含 luci-app-opkg。
+            512MB 闪存提供充足空间，可安心安装更多插件。
           files: |
             immortalwrt/bin/targets/mediatek/filogic/*cudy*
             immortalwrt/bin/targets/mediatek/filogic/*tr3000*
