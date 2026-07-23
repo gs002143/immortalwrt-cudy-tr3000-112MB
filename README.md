@@ -1,4 +1,4 @@
-# ImmortalWrt 定制固件 — Cudy TR3000 v1 (112MB)
+# ImmortalWrt 定制固件 — Cudy TR3000 v1 (490MB)
 
 ## 功能清单
 
@@ -7,8 +7,8 @@
 | 1 | 基础版本 | ImmortalWrt 24.10.6 稳定版 |
 | 2 | Argon 主题 | 已设为默认主题 |
 | 3 | UPnP / NAT-PMP | miniupnpd-nftables + LuCI 面板 |
-| 4 | nikki 软件源 | 首次启动自动写入，opkg 可直接在线安装 |
-| 5 | UBI 分区扩展 | DTS 中 0x4000000 → 0x7000000（64MB→112MB） |
+| 4 | passwall 软件源 | 首次启动自动写入，opkg 可直接在线安装 |
+| 5 | UBI 分区扩展 | DTS 中64MB→490MB |
 | 6 | 首次启动预设 | 无密码、192.168.1.1、WiFi开启（Cudy / Cudy-5G）|
 | 7 | 官方预装包 | 全部保留 |
 | 8 | 中兴F50驱动 | kmod-mii / usb-net / cdc-ether / rndis |
